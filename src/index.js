@@ -138,16 +138,19 @@ export default class Gantt {
             }
 
             // dependencies
-            if (typeof task.dependencies === 'string' || !task.dependencies) {
-                let deps = [];
-                if (task.dependencies) {
-                    deps = task.dependencies
-                        .split(',')
-                        .map((d) => d.trim())
-                        .filter((d) => d);
-                }
-                task.dependencies = deps;
-            }
+            // if (typeof task.dependencies === 'string' || !task.dependencies) {
+            //     let deps = [];
+            //     if (task.dependencies) {
+            //         deps = task.dependencies
+            //             .split(',')
+            //             .map((d) => d.trim())
+            //             .filter((d) => d);
+            //     }
+            //     task.dependencies = deps;
+            // }
+            // if(typeof task.dependencies === "number"){
+            //     task.dependencies = task.dependencies;
+            // }
 
             // uids
             if (!task.id) {
@@ -157,7 +160,7 @@ export default class Gantt {
             return task;
         });
 
-        this.setup_dependencies();
+        // this.setup_dependencies();
     }
 
     setup_dependencies() {
@@ -583,22 +586,18 @@ export default class Gantt {
 
     make_arrows() {
         this.arrows = [];
-        for (let task of this.tasks) {
+        for (const [index,task] of this.tasks.entries()) {
             let arrows = [];
-            arrows = task.dependencies
-                .map((task_id) => {
-                    const dependency = this.get_task(task_id);
-                    if (!dependency) return;
-                    const arrow = new Arrow(
-                        this,
-                        this.bars[dependency._index], // from_task
-                        this.bars[task._index] // to_task
-                    );
-                    this.layers.arrow.appendChild(arrow.element);
-                    return arrow;
-                })
-                .filter(Boolean); // filter falsy values
-            this.arrows = this.arrows.concat(arrows);
+            if(typeof task.dependencies === "number"){
+                const arrow = new Arrow(
+                    this,
+                    this.bars[task.dependencies], // from_task
+                    this.bars[index] // to_task
+                );
+                this.layers.arrow.appendChild(arrow.element);
+                this.arrows.push(arrow)
+            }
+            
         }
     }
 
