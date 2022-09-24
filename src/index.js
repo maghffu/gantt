@@ -339,8 +339,8 @@ export default class Gantt {
         const row_height = this.options.bar_height + this.options.padding;
 
         let row_y = this.options.header_height + this.options.padding / 2;
-
-        for (let task of this.tasks) {
+        const rows = this.tasks[this.tasks.length-1].row + 1
+        for (let i = 0; i < rows; i++) {
             createSVG('rect', {
                 x: 0,
                 y: row_y,
