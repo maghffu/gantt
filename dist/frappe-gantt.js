@@ -1106,7 +1106,7 @@ var Gantt = (function () {
                 column_width: 30,
                 step: 24,
                 view_modes: [...Object.values(VIEW_MODE)],
-                bar_height: 20,
+                bar_height: 26,
                 bar_corner_radius: 3,
                 arrow_curve: 5,
                 padding: 18,
@@ -1133,6 +1133,10 @@ var Gantt = (function () {
 
                 // cache index
                 task._index = i;
+
+                if (typeof task.row === 'number') {
+                    task._index = task.row;
+                  }
 
                 // invalid dates
                 if (!task.start && !task.end) {
@@ -1161,17 +1165,17 @@ var Gantt = (function () {
                     task.invalid = true;
                 }
 
-                // dependencies
-                if (typeof task.dependencies === 'string' || !task.dependencies) {
-                    let deps = [];
-                    if (task.dependencies) {
-                        deps = task.dependencies
-                            .split(',')
-                            .map((d) => d.trim())
-                            .filter((d) => d);
-                    }
-                    task.dependencies = deps;
-                }
+                // // dependencies
+                // if (typeof task.dependencies === 'string' || !task.dependencies) {
+                //     let deps = [];
+                //     if (task.dependencies) {
+                //         deps = task.dependencies
+                //             .split(',')
+                //             .map((d) => d.trim())
+                //             .filter((d) => d);
+                //     }
+                //     task.dependencies = deps;
+                // }
 
                 // uids
                 if (!task.id) {
@@ -1181,7 +1185,7 @@ var Gantt = (function () {
                 return task;
             });
 
-            this.setup_dependencies();
+            // this.setup_dependencies();
         }
 
         setup_dependencies() {
@@ -1360,8 +1364,13 @@ var Gantt = (function () {
             const row_height = this.options.bar_height + this.options.padding;
 
             let row_y = this.options.header_height + this.options.padding / 2;
-
-            for (let task of this.tasks) {
+            let arr = [];
+            this.tasks.forEach(task => {
+                if(!arr.includes(task.row)){
+                    arr.push(task.row);
+                }
+            });
+            for (let task of arr) {
                 createSVG('rect', {
                     x: 0,
                     y: row_y,
@@ -1607,22 +1616,17 @@ var Gantt = (function () {
 
         make_arrows() {
             this.arrows = [];
-            for (let task of this.tasks) {
-                let arrows = [];
-                arrows = task.dependencies
-                    .map((task_id) => {
-                        const dependency = this.get_task(task_id);
-                        if (!dependency) return;
-                        const arrow = new Arrow(
-                            this,
-                            this.bars[dependency._index], // from_task
-                            this.bars[task._index] // to_task
-                        );
-                        this.layers.arrow.appendChild(arrow.element);
-                        return arrow;
-                    })
-                    .filter(Boolean); // filter falsy values
-                this.arrows = this.arrows.concat(arrows);
+            for (const [index,task] of this.tasks.entries()) {
+                if(typeof task.dependencies === "number"){
+                    const arrow = new Arrow(
+                        this,
+                        this.bars[task.dependencies], // from_task
+                        this.bars[index] // to_task
+                    );
+                    this.layers.arrow.appendChild(arrow.element);
+                    this.arrows.push(arrow);
+                }
+                
             }
         }
 
